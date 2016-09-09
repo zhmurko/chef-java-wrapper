@@ -20,30 +20,25 @@ def whyrun_supported?
   true
 end
 
+use_inline_resources 
+
 action :create do
   create_app_with_wrapper
-
-  # My state has changed so I'd better notify observers
-  new_resource.updated_by_last_action(true)
 end
+
 action :enable do
   deploy_app_with_wrapper
-
-  # My state has changed so I'd better notify observers
-  new_resource.updated_by_last_action(true)
 end
+
 action :start do
   start_app_with_wrapper
-
-  # My state has changed so I'd better notify observers
-  new_resource.updated_by_last_action(true)
 end
+
 action :remove do
   remove_app_with_wrapper
-
-  # My state has changed so I'd better notify observers
-  new_resource.updated_by_last_action(true)
 end
+
+
 
 def extract_native_lib
   # copy the native library to specified folder
