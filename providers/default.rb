@@ -42,8 +42,6 @@ end
 
 def extract_native_lib
   # copy the native library to specified folder
-  return if new_resource.native_library_dest_dir.empty?
-
   filename = case new_resource.wrapper_os
              when 'linux'
                'libwrapper.so'
@@ -60,6 +58,8 @@ def extract_native_lib
     path new_resource.native_library_dest_dir
     creates "wrapper-#{new_resource.wrapper_os}-#{new_resource.wrapper_cpu}-#{new_resource.wrapper_bit}-"\
       "#{new_resource.wrapper_version}/lib/#{filename}"
+    not_if new_resource.native_library_dest_dir.empty?
+    notify :create, "directory[#{new_resource.native_library_dest_dir}]", :before
   end
 end
 
