@@ -20,35 +20,28 @@ def whyrun_supported?
   true
 end
 
+use_inline_resources 
+
 action :create do
   create_app_with_wrapper
-
-  # My state has changed so I'd better notify observers
-  new_resource.updated_by_last_action(true)
 end
+
 action :enable do
   deploy_app_with_wrapper
-
-  # My state has changed so I'd better notify observers
-  new_resource.updated_by_last_action(true)
 end
+
 action :start do
   start_app_with_wrapper
-
-  # My state has changed so I'd better notify observers
-  new_resource.updated_by_last_action(true)
 end
+
 action :remove do
   remove_app_with_wrapper
-
-  # My state has changed so I'd better notify observers
-  new_resource.updated_by_last_action(true)
 end
+
+
 
 def extract_native_lib
   # copy the native library to specified folder
-  return if new_resource.native_library_dest_dir.empty?
-
   filename = case new_resource.wrapper_os
              when 'linux'
                'libwrapper.so'
@@ -65,6 +58,8 @@ def extract_native_lib
     path new_resource.native_library_dest_dir
     creates "wrapper-#{new_resource.wrapper_os}-#{new_resource.wrapper_cpu}-#{new_resource.wrapper_bit}-"\
       "#{new_resource.wrapper_version}/lib/#{filename}"
+    not_if new_resource.native_library_dest_dir.empty?
+    notify :create, "directory[#{new_resource.native_library_dest_dir}]", :before
   end
 end
 
@@ -90,6 +85,7 @@ def create_conf_files
     )
     owner new_resource.permissions_owner
     group new_resource.permissions_group
+    notifies :restart, "service[#{new_resource.app_name}]"
   end
 
   template "#{new_resource.bin_dir}/#{new_resource.app_name}" do
@@ -107,6 +103,7 @@ def create_conf_files
     )
     owner new_resource.permissions_owner
     group new_resource.permissions_group
+    notifies :restart, "service[#{new_resource.app_name}]"
   end
 end
 
@@ -136,7 +133,7 @@ def deploy_app_with_wrapper
     cwd new_resource.bin_dir
     user 'root'
     command "#{new_resource.bin_dir}/#{new_resource.app_name} install"
-    creates '/etc/init.d/jetty'
+    creates "/etc/init.d/#{new_resource.app_name}"
   end
 end
 
