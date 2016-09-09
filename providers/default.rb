@@ -85,6 +85,7 @@ def create_conf_files
     )
     owner new_resource.permissions_owner
     group new_resource.permissions_group
+    notifies :restart, "service[#{new_resource.app_name}]"
   end
 
   template "#{new_resource.bin_dir}/#{new_resource.app_name}" do
@@ -102,6 +103,7 @@ def create_conf_files
     )
     owner new_resource.permissions_owner
     group new_resource.permissions_group
+    notifies :restart, "service[#{new_resource.app_name}]"
   end
 end
 
@@ -131,7 +133,7 @@ def deploy_app_with_wrapper
     cwd new_resource.bin_dir
     user 'root'
     command "#{new_resource.bin_dir}/#{new_resource.app_name} install"
-    creates '/etc/init.d/jetty'
+    creates "/etc/init.d/#{new_resource.app_name}"
   end
 end
 
